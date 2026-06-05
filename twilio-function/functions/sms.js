@@ -10,9 +10,12 @@
 //   @anthropic-ai/sdk
 //   @neondatabase/serverless
 //
-// Note: STOP / HELP / START are intercepted by Twilio's Advanced Opt-Out
-// BEFORE this function runs (leave it ON for carrier compliance). We also
-// handle them here as a fallback so the database stays in sync if it's off.
+// Design notes:
+//  - STOP / HELP / START are intercepted by Twilio's Advanced Opt-Out BEFORE
+//    this runs (leave it ON for compliance); we also handle them here as a
+//    fallback so the database stays in sync.
+//  - Exactly ONE Claude call per message (decide + reply in a single request)
+//    to stay well under Twilio's 10-second function timeout.
 
 const Anthropic = require("@anthropic-ai/sdk");
 const { neon } = require("@neondatabase/serverless");
@@ -31,7 +34,7 @@ exports.handler = async function (context, event, callback) {
   const anthropic = new Anthropic({ apiKey: context.ANTHROPIC_API_KEY });
 
   try {
-    // --- Opt-out / opt-in fallback handling -------------------------------
+    // --- Opt-out / opt-in fallback (no LLM needed) ------------------------
     if (STOP_WORDS.includes(lower)) {
       await sql`UPDATE subscribers SET status = 'stopped' WHERE phone = ${from}`;
       await sql`INSERT INTO consent_log (phone, event, method, consent_text)
@@ -55,59 +58,45 @@ exports.handler = async function (context, event, callback) {
     }
     const sub = rows[0];
 
-    // --- Is this a preference command or a question? ----------------------
-    const cls = await anthropic.messages.create({
+    // --- One Claude call: decide intent AND produce the reply ------------
+    const out = await anthropic.messages.create({
       model,
-      max_tokens: 5,
+      max_tokens: 350,
       system:
-        "You classify a text message sent to a personal news bot. Reply with exactly one word: " +
-        "'command' if the user is asking to change which news topics they receive, otherwise 'question'.",
+        "You are the SMS assistant for a personal news service called Daily Brief. " +
+        `The subscriber's current topics are: ${JSON.stringify(sub.topics)}. ` +
+        "Decide whether their message asks to CHANGE their news topics, or is a general message/question. " +
+        'Reply with ONLY minified JSON, no other text, shaped exactly like: ' +
+        '{"action":"update_topics"|"reply","topics":["lowercase","keywords"],"reply":"short casual SMS reply, 1-3 sentences, no formatting"}. ' +
+        'Use "update_topics" only if they want to add/remove/replace topics; then "topics" MUST be the FULL updated list and "reply" confirms it. ' +
+        'Otherwise use "reply" to answer helpfully and leave "topics" as the unchanged list.',
       messages: [{ role: "user", content: body }],
     });
-    const kind = (cls.content[0].text || "").toLowerCase();
 
-    if (kind.includes("command")) {
-      // Ask Claude for the full updated topic list as JSON.
-      const ext = await anthropic.messages.create({
-        model,
-        max_tokens: 200,
-        system:
-          "You update a news subscriber's topic list. Return ONLY valid JSON of the form " +
-          '{"topics":["topic1","topic2"]} containing the FULL updated list of lowercase topic keywords. No other text.',
-        messages: [
-          {
-            role: "user",
-            content: `Current topics: ${JSON.stringify(sub.topics)}\nUser request: ${body}`,
-          },
-        ],
-      });
-      let topics = sub.topics;
-      const match = (ext.content[0].text || "").match(/\{[\s\S]*\}/);
-      if (match) {
-        try {
-          const parsed = JSON.parse(match[0]);
-          if (Array.isArray(parsed.topics) && parsed.topics.length) {
-            topics = parsed.topics.map((t) => String(t).toLowerCase().trim());
-          }
-        } catch (e) {
-          /* fall back to existing topics */
+    let action = "reply";
+    let topics = sub.topics;
+    let reply = "";
+    const match = (out.content[0].text || "").match(/\{[\s\S]*\}/);
+    if (match) {
+      try {
+        const parsed = JSON.parse(match[0]);
+        if (parsed.action) action = parsed.action;
+        if (Array.isArray(parsed.topics) && parsed.topics.length) {
+          topics = parsed.topics.map((t) => String(t).toLowerCase().trim());
         }
+        if (typeof parsed.reply === "string") reply = parsed.reply.trim();
+      } catch (e) {
+        /* fall through with defaults */
       }
-      await sql`UPDATE subscribers SET topics = ${topics} WHERE phone = ${from}`;
-      twiml.message(`Done! Your topics are now: ${topics.join(", ")}. You'll see this in tomorrow's brief.`);
-      return callback(null, twiml);
+    }
+    if (!reply) reply = "Got it!";
+
+    if (action === "update_topics") {
+      // ::text[] cast keeps the array binding unambiguous for Postgres.
+      await sql`UPDATE subscribers SET topics = ${topics}::text[] WHERE phone = ${from}`;
     }
 
-    // --- Otherwise: answer their question casually ------------------------
-    const ans = await anthropic.messages.create({
-      model,
-      max_tokens: 300,
-      system:
-        "You are a friendly, knowledgeable news companion replying by SMS. " +
-        "Keep replies short and casual — 1 to 3 sentences, no bullet points or formatting.",
-      messages: [{ role: "user", content: body }],
-    });
-    twiml.message((ans.content[0].text || "").trim());
+    twiml.message(reply);
     return callback(null, twiml);
   } catch (err) {
     console.error(err);
