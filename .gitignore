@@ -1,0 +1,13 @@
+# Secrets & local state
+.env
+last_briefing.txt
+prefs.json
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor / tooling
+.claude/
+.vscode/
+.DS_Store
