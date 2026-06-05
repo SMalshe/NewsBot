@@ -1,6 +1,5 @@
-import feedparser, json, os
+import feedparser
 
-PREFS_FILE = os.path.join(os.path.dirname(__file__), "prefs.json")
 SEARCH_FEED = "https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
 
 # Curated feeds per category — used when a topic matches a known category
@@ -69,11 +68,6 @@ ALIASES = {
     "international": "world",
 }
 
-def load_topics():
-    if os.path.exists(PREFS_FILE):
-        return json.load(open(PREFS_FILE)).get("topics", ["tech", "world"])
-    return ["tech", "world"]
-
 def _resolve_category(topic):
     key = topic.lower().strip()
     return CATEGORIES.get(ALIASES.get(key, key))
@@ -96,8 +90,7 @@ def _to_item(entry, source=""):
         "source": source or (getattr(entry, "source", {}) or {}).get("title", ""),
     }
 
-def get_news(max_items=6):
-    topics = load_topics()
+def get_news(topics, max_items=6):
     results = {}
 
     for topic in topics:

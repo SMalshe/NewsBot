@@ -1,0 +1,4 @@
+feedparser
+anthropic
+twilio
+psycopg2-binary

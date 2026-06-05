@@ -1,0 +1,13 @@
+{
+  "name": "newsbot-twilio-function",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Inbound-SMS reply handler for the News Bot, deployed as a Twilio Function.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "@neondatabase/serverless": "^0.10.4"
+  },
+  "scripts": {
+    "deploy": "twilio serverless:deploy"
+  }
+}

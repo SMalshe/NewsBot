@@ -1,24 +1,28 @@
-# main.py
-import schedule, time, json, os
+# main.py — the morning briefing job.
+# Runs ONCE and exits. Scheduling is handled externally by GitHub Actions
+# (see .github/workflows/briefing.yml). For each active subscriber it pulls
+# news for their topics, summarizes with Claude, and texts them via Twilio.
+#
+# Inbound replies are NOT handled here — they run as a Twilio Function
+# (twilio-function/functions/sms.js) triggered when someone texts the number.
 from scraper import get_news
 from summarizer import summarize, send_texts
-from responder import check_and_reply
+from db import get_active_subscribers
 
-STATE = "last_briefing.txt"
 
-def morning_job():
-    news = get_news()
-    stories, briefing = summarize(news)
-    send_texts(stories)
-    open(STATE, "w").write(briefing)
+def run():
+    subscribers = get_active_subscribers()
+    print(f"Sending briefings to {len(subscribers)} subscriber(s)")
 
-def reply_job():
-    if os.path.exists(STATE):
-        check_and_reply(open(STATE).read())
+    for phone, topics in subscribers:
+        try:
+            news = get_news(topics)
+            stories, _ = summarize(news)
+            send_texts(stories, phone)
+            print(f"  ✓ sent to {phone} ({len(stories)} stories)")
+        except Exception as e:
+            print(f"  ✗ failed for {phone}: {e}")
 
-schedule.every().day.at("07:00").do(morning_job)
-schedule.every(5).minutes.do(reply_job)
 
-while True:
-    schedule.run_pending()
-    time.sleep(30)
+if __name__ == "__main__":
+    run()

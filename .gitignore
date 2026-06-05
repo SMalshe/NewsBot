@@ -7,6 +7,10 @@ prefs.json
 __pycache__/
 *.pyc
 
+# Node
+node_modules/
+.twilio-functions
+
 # Editor / tooling
 .claude/
 .vscode/

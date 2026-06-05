@@ -3,38 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Brief — Personal SMS News Briefings</title>
-  <meta name="description" content="Daily Brief is a personal, opt-in project that delivers a short morning news summary by text message. Reply to ask follow-up questions or change your topics anytime." />
+  <title>Daily Brief — Two-Way SMS News Briefings</title>
+  <meta name="description" content="Daily Brief texts you a short, personalized news summary every morning. Text back to ask questions or change your topics — it's a real two-way conversation by SMS." />
   <style>
     :root {
-      --bg: #0c0f14;
-      --panel: #141922;
-      --panel-2: #1b2230;
-      --text: #e7ecf3;
-      --muted: #9aa6b8;
-      --accent: #f4a83a;
-      --accent-2: #5aa7ff;
-      --border: #232c3b;
-      --radius: 16px;
+      --bg: #0c0f14; --panel: #141922; --panel-2: #1b2230;
+      --text: #e7ecf3; --muted: #9aa6b8; --accent: #f4a83a; --accent-2: #5aa7ff;
+      --border: #232c3b; --radius: 16px;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       background: radial-gradient(1200px 600px at 70% -10%, #1a2230 0%, var(--bg) 55%);
-      color: var(--text);
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
+      color: var(--text); line-height: 1.6; -webkit-font-smoothing: antialiased;
     }
     a { color: var(--accent-2); text-decoration: none; }
     a:hover { text-decoration: underline; }
     .wrap { max-width: 980px; margin: 0 auto; padding: 0 22px; }
 
     header {
-      position: sticky; top: 0; z-index: 10;
-      backdrop-filter: blur(10px);
-      background: rgba(12,15,20,0.72);
-      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
+      background: rgba(12,15,20,0.72); border-bottom: 1px solid var(--border);
     }
     .nav { display: flex; align-items: center; justify-content: space-between; height: 64px; }
     .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
@@ -45,7 +35,7 @@
     }
     .nav-links { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
     .nav-links a { color: var(--muted); }
-    @media (max-width: 640px) { .nav-links { display: none; } }
+    @media (max-width: 680px) { .nav-links { display: none; } }
 
     .hero { padding: 80px 0 56px; }
     .pill {
@@ -59,7 +49,7 @@
     .cta-row { display: flex; gap: 14px; margin-top: 30px; flex-wrap: wrap; }
     .btn {
       display: inline-block; padding: 13px 22px; border-radius: 12px; font-weight: 600; font-size: 15px;
-      background: var(--accent); color: #1a1206; border: 1px solid transparent;
+      background: var(--accent); color: #1a1206; border: 1px solid transparent; cursor: pointer;
     }
     .btn:hover { text-decoration: none; filter: brightness(1.05); }
     .btn.ghost { background: transparent; color: var(--text); border-color: var(--border); }
@@ -70,8 +60,7 @@
 
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
     .card {
-      background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
-      padding: 22px;
+      background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px;
     }
     .card .ico { font-size: 24px; margin-bottom: 10px; }
     .card h3 { font-size: 17px; margin-bottom: 6px; }
@@ -88,15 +77,26 @@
       background: var(--panel-2); border-radius: 16px; padding: 11px 13px; margin: 8px 4px;
       font-size: 13.5px; white-space: pre-wrap; border: 1px solid var(--border);
     }
-    .bubble.me {
-      background: #245bbd; border-color: #2f6ad1; color: #eaf1ff; margin-left: 38px;
-    }
+    .bubble.me { background: #245bbd; border-color: #2f6ad1; color: #eaf1ff; margin-left: 38px; }
     .bubble .tag { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
 
     .keywords { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 16px; margin-top: 8px; }
     .kw { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
     .kw code { color: var(--accent); font-size: 15px; font-weight: 700; }
     .kw p { color: var(--muted); font-size: 14px; margin-top: 4px; }
+
+    /* Sign-up form */
+    .signup { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 26px; max-width: 460px; }
+    .signup label { display: block; font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+    .signup input[type=tel] {
+      width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+      background: #0d1219; color: var(--text); font-size: 15px; margin-bottom: 16px;
+    }
+    .consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .consent input { margin-top: 3px; }
+    .form-msg { font-size: 14px; margin-top: 14px; min-height: 20px; }
+    .form-msg.ok { color: #5fd39a; }
+    .form-msg.err { color: #ff8a8a; }
 
     .legal { color: var(--muted); font-size: 14.5px; }
     .legal h3 { color: var(--text); font-size: 17px; margin: 22px 0 6px; }
@@ -115,9 +115,9 @@
       <nav class="nav-links">
         <a href="#how">How it works</a>
         <a href="#messages">Sample messages</a>
+        <a href="#signup">Sign up</a>
         <a href="#consent">Consent &amp; opt-out</a>
         <a href="#privacy">Privacy</a>
-        <a href="#contact">Contact</a>
       </nav>
     </div>
   </header>
@@ -125,15 +125,15 @@
   <main>
     <section class="hero" style="border-top:none">
       <div class="wrap">
-        <span class="pill">Personal · opt-in · experimental</span>
-        <h1>Your morning news,<br /><span>delivered by text.</span></h1>
+        <span class="pill">Two-way SMS · opt-in</span>
+        <h1>Your morning news,<br /><span>and you can text back.</span></h1>
         <p class="lead">
-          Daily Brief is an independent personal project that sends a short, personalized news
-          summary by SMS each morning — covering only the topics you choose. Reply to any text to
-          ask a follow-up question or update your topics. No app, no feed to scroll.
+          Daily Brief sends a short, personalized news summary by text each morning — covering only
+          the topics you choose. Text back to ask a follow-up question or change your topics, and it
+          replies right in the same conversation. No app, no feed to scroll.
         </p>
         <div class="cta-row">
-          <a class="btn" href="#consent">How sign-up works</a>
+          <a class="btn" href="#signup">Sign up</a>
           <a class="btn ghost" href="#messages">See sample messages</a>
         </div>
       </div>
@@ -142,22 +142,22 @@
     <section id="how">
       <div class="wrap">
         <h2>How it works</h2>
-        <p class="sub">A simple, opt-in tool built for people who want the day's headlines without the noise.</p>
+        <p class="sub">A simple, opt-in tool for people who want the day's headlines without the noise.</p>
         <div class="grid">
           <div class="card">
             <div class="ico">✅</div>
             <h3>1. You opt in</h3>
-            <p>You give explicit consent and pick your topics — for example AI, politics, business, or sports.</p>
+            <p>Enter your number and confirm you want texts. You pick your topics — AI, politics, business, sports, and more.</p>
           </div>
           <div class="card">
             <div class="ico">☀️</div>
             <h3>2. Morning briefing</h3>
-            <p>Each morning we text you a handful of concise summaries with a link to read more on each story.</p>
+            <p>Each morning you get a handful of concise summaries by text, each with a link to read more.</p>
           </div>
           <div class="card">
             <div class="ico">💬</div>
-            <h3>3. Reply anytime</h3>
-            <p>Text back to ask a question about a story or to change which topics you receive.</p>
+            <h3>3. Text back</h3>
+            <p>Reply by text to ask a question about a story or to change your topics. It answers by text.</p>
           </div>
           <div class="card">
             <div class="ico">🛑</div>
@@ -171,7 +171,7 @@
     <section id="messages">
       <div class="wrap">
         <h2>Sample messages</h2>
-        <p class="sub">Examples of the kind of texts Daily Brief sends and how it replies.</p>
+        <p class="sub">A real two-way SMS conversation — the briefing and your replies, all by text.</p>
         <div class="showcase">
           <div class="phone">
             <div class="bar">Daily Brief — SMS</div>
@@ -183,7 +183,7 @@ A new open model just matched the top labs on key benchmarks — at a fraction o
             <div class="bubble me">What makes this one different?</div>
             <div class="bubble"><span class="tag">Daily Brief</span>Mostly the price-to-performance — it runs on far cheaper hardware, which is why people are paying attention.</div>
             <div class="bubble me">Add sports to my topics</div>
-            <div class="bubble"><span class="tag">Daily Brief</span>Done! You'll start getting sports headlines in tomorrow's brief.</div>
+            <div class="bubble"><span class="tag">Daily Brief</span>Done! Your topics are now: ai, politics, business, sports. You'll see this in tomorrow's brief.</div>
           </div>
           <div>
             <div class="card" style="margin-bottom:14px">
@@ -192,7 +192,7 @@ A new open model just matched the top labs on key benchmarks — at a fraction o
             </div>
             <div class="card" style="margin-bottom:14px">
               <h3>Conversational replies</h3>
-              <p>Reply to any message to get more context on a story you're curious about.</p>
+              <p>Text back about any story and get more context — answered by text, in the same thread.</p>
             </div>
             <div class="card">
               <h3>Preference updates</h3>
@@ -203,16 +203,36 @@ A new open model just matched the top labs on key benchmarks — at a fraction o
       </div>
     </section>
 
+    <section id="signup">
+      <div class="wrap">
+        <h2>Sign up</h2>
+        <p class="sub">Enter your mobile number to start receiving the daily briefing by text.</p>
+        <form class="signup" id="signup-form">
+          <label for="phone">Mobile number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" autocomplete="tel" required />
+          <div class="consent">
+            <input type="checkbox" id="consent" name="consent" required />
+            <label for="consent" style="margin:0">
+              I agree to receive a recurring daily news briefing and reply messages by SMS from Daily Brief.
+              Message &amp; data rates may apply. Reply STOP to cancel, HELP for help. Consent is not a
+              condition of any purchase.
+            </label>
+          </div>
+          <button class="btn" type="submit">Sign up for texts</button>
+          <div class="form-msg" id="form-msg" role="status"></div>
+        </form>
+      </div>
+    </section>
+
     <section id="consent">
       <div class="wrap">
         <h2>Consent &amp; opt-out</h2>
         <p class="sub">Daily Brief only messages people who have explicitly asked to receive it.</p>
         <div class="legal">
           <p>
-            <strong>How users opt in:</strong> A person subscribes by directly providing their own mobile
-            number and confirming they want to receive a daily news briefing by SMS. Consent is collected in
-            person or through a direct request to the operator. Phone numbers are never bought, rented, or
-            shared, and no one is messaged who has not personally requested the service. Consent to receive
+            <strong>How users opt in:</strong> You subscribe by entering your own mobile number on this site
+            and checking the box agreeing to receive messages. We record that consent. Phone numbers are never
+            bought, rented, or shared, and no one is messaged who has not personally opted in. Consent to receive
             messages is not a condition of any purchase.
           </p>
           <p style="margin-top:12px">
@@ -226,7 +246,7 @@ A new open model just matched the top labs on key benchmarks — at a fraction o
             </div>
             <div class="kw">
               <code>HELP</code>
-              <p>Reply HELP for assistance, or email the operator at the address in the Contact section below.</p>
+              <p>Reply HELP for assistance, or email the operator at the address in the footer below.</p>
             </div>
           </div>
         </div>
@@ -239,12 +259,13 @@ A new open model just matched the top labs on key benchmarks — at a fraction o
         <p class="sub">Last updated: June 2026</p>
         <div class="legal">
           <p>
-            Daily Brief ("we", "us") is a personal, opt-in SMS news briefing project. This policy explains
-            what information we collect and how it is used.
+            Daily Brief ("we", "us") is an opt-in SMS news briefing service. This policy explains what
+            information we collect and how it is used.
           </p>
           <h3>Information we collect</h3>
           <ul>
             <li>Your mobile phone number, which you provide in order to receive briefings.</li>
+            <li>A record of your consent (the date and that you agreed to receive messages).</li>
             <li>Your chosen news topics and preferences.</li>
             <li>The content of messages you send us, used only to generate a relevant reply.</li>
           </ul>
@@ -267,21 +288,7 @@ A new open model just matched the top labs on key benchmarks — at a fraction o
           <ul>
             <li>You can unsubscribe at any time by replying STOP. On request, your number and preferences are deleted from our records.</li>
           </ul>
-          <p style="margin-top:14px">Questions about this policy? Contact the operator using the details below.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="contact">
-      <div class="wrap">
-        <h2>Contact</h2>
-        <p class="sub">Reach the operator of Daily Brief with any questions about the project.</p>
-        <div class="card" style="max-width:420px">
-          <h3>Daily Brief</h3>
-          <p style="margin-top:6px">
-            Email: <a href="mailto:sharvinmalshe@gmail.com">sharvinmalshe@gmail.com</a><br />
-            Operated by: Sharvin Malshe (independent developer)
-          </p>
+          <p style="margin-top:14px">Questions about this policy? Contact the operator using the details in the footer.</p>
         </div>
       </div>
     </section>
@@ -291,15 +298,47 @@ A new open model just matched the top labs on key benchmarks — at a fraction o
     <div class="wrap footer-row">
       <div>
         <div class="brand" style="font-size:16px"><span class="logo" style="width:26px;height:26px;font-size:14px">☕</span> Daily Brief</div>
-        <p class="note">An independent, opt-in SMS news briefing project. Message &amp; data rates may apply. Reply STOP to cancel, HELP for help.</p>
+        <p class="note">An opt-in two-way SMS news briefing service operated by Sharvin Malshe (independent developer). Message &amp; data rates may apply. Reply STOP to cancel, HELP for help.</p>
+        <p class="note">Contact: <a href="mailto:sharvinmalshe@gmail.com">sharvinmalshe@gmail.com</a></p>
       </div>
       <div style="text-align:right">
         <a href="#privacy">Privacy Policy</a> &nbsp;·&nbsp;
         <a href="#consent">Opt-out</a> &nbsp;·&nbsp;
-        <a href="#contact">Contact</a>
+        <a href="#signup">Sign up</a>
         <p class="note">© 2026 Daily Brief.</p>
       </div>
     </div>
   </footer>
+
+  <script>
+    const form = document.getElementById("signup-form");
+    const msg = document.getElementById("form-msg");
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      msg.className = "form-msg";
+      msg.textContent = "Signing you up…";
+      const phone = document.getElementById("phone").value;
+      const consent = document.getElementById("consent").checked;
+      try {
+        const res = await fetch("/api/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone, consent }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msg.className = "form-msg ok";
+          msg.textContent = "You're signed up! Your first briefing arrives tomorrow morning.";
+          form.reset();
+        } else {
+          msg.className = "form-msg err";
+          msg.textContent = data.error || "Something went wrong. Please try again.";
+        }
+      } catch (err) {
+        msg.className = "form-msg err";
+        msg.textContent = "Network error. Please try again.";
+      }
+    });
+  </script>
 </body>
 </html>

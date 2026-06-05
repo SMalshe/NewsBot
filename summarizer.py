@@ -40,10 +40,9 @@ def summarize(news):
     return stories, briefing
 
 
-def send_texts(stories):
+def send_texts(stories, to_num):
     twilio = Client(os.environ["TWILIO_ACCOUNT_SID"], os.environ["TWILIO_AUTH_TOKEN"])
     from_num = os.environ["TWILIO_FROM_NUMBER"]
-    to_num = os.environ["RECIPIENT_PHONE"]
 
     topics = list(dict.fromkeys(s["topic"].title() for s in stories))
     twilio.messages.create(
