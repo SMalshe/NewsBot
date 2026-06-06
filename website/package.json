@@ -4,6 +4,6 @@
   "private": true,
   "description": "Daily Brief landing page + sign-up API (Vercel).",
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "postgres": "^3.4.5"
   }
 }

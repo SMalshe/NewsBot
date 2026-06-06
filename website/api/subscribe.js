@@ -6,7 +6,11 @@
 //
 // Keeping a consent record (consent_at + consent_text) matters: SMS carriers
 // can ask you to prove each person opted in.
-const { neon } = require("@neondatabase/serverless");
+const postgres = require("postgres");
+
+// Module-scope connection is reused across warm invocations.
+// `prepare: false` is required for Supabase's transaction pooler (PgBouncer).
+const sql = postgres(process.env.DATABASE_URL, { ssl: "require", prepare: false });
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
@@ -39,7 +43,6 @@ module.exports = async function handler(req, res) {
   const userAgent = req.headers["user-agent"] || null;
 
   try {
-    const sql = neon(process.env.DATABASE_URL);
     await sql`
       INSERT INTO subscribers (phone, status, consent_at, consent_text)
       VALUES (${normalized}, 'active', now(), ${consentText})

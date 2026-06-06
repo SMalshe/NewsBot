@@ -12,22 +12,27 @@ All three share one **Postgres database** (`subscribers` + `consent_log` tables)
 
 ---
 
-## 0. Database (already provisioned)
+## 0. Database (Supabase)
 
-A Neon project **`news-bot`** was created with both tables. Get its connection
-string from the [Neon Console](https://console.neon.tech) → project `news-bot` →
-**Connection Details**. It looks like:
+**Create the tables:** open your Supabase project → **SQL Editor** → **New query**
+→ paste all of [`schema.sql`](schema.sql) → **Run**. You'll get `subscribers` and
+`consent_log` (check the **Table Editor** to confirm).
 
-```
-postgresql://neondb_owner:****@ep-...-pooler.c-3.us-east-2.aws.neon.tech/neondb?sslmode=require
-```
+**Get your connection strings** (Settings → Database → Connection string → URI):
+- **Serverless functions** (Twilio Function, Vercel API) → use the **Transaction
+  pooler**, port `6543`. The code sets `prepare: false` for this pooler.
+  ```
+  postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:6543/postgres
+  ```
+- **GitHub Actions** morning job (a once-a-day batch) → use the **Session pooler**
+  / direct connection, port `5432`.
 
-This value is your `DATABASE_URL`. Keep it secret — never commit it.
+These are your `DATABASE_URL` values. Keep them secret — never commit them.
 
-To re-create the schema elsewhere, run [`schema.sql`](schema.sql) in any Postgres
-SQL editor. (For Supabase, see [`SUPABASE.md`](SUPABASE.md).)
+> Note: a Neon project `news-bot` was also created earlier as a fallback. You're
+> using Supabase, so you can ignore or delete it — it won't be referenced.
 
-**Seed yourself as the first subscriber** (Neon SQL Editor — use your real number):
+**Seed yourself as the first subscriber** (Supabase SQL Editor — use your real number):
 ```sql
 INSERT INTO subscribers (phone, topics, status, consent_at, consent_text)
 VALUES ('+1XXXXXXXXXX', '{ai,politics,business}', 'active', now(), 'Owner self-enrolled')
@@ -62,7 +67,7 @@ Code: [`twilio-function/functions/sms.js`](twilio-function/functions/sms.js).
 
 **Option A — Twilio Console (no CLI):**
 1. Console → **Functions & Assets → Services → Create Service** (name it `newsbot`).
-2. **Dependencies** tab → add `@anthropic-ai/sdk` and `@neondatabase/serverless`.
+2. **Dependencies** tab → add `@anthropic-ai/sdk` and `postgres`.
 3. **Environment Variables** tab → add `ANTHROPIC_API_KEY` and `DATABASE_URL`
    (and optionally `ANTHROPIC_MODEL`).
 4. Add a **Function**, path `/sms`, set it to **Protected** or **Public**

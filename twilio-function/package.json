@@ -5,7 +5,7 @@
   "description": "Inbound-SMS reply handler for the News Bot, deployed as a Twilio Function.",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
-    "@neondatabase/serverless": "^0.10.4"
+    "postgres": "^3.4.5"
   },
   "scripts": {
     "deploy": "twilio serverless:deploy"
