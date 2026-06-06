@@ -57,6 +57,7 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ ok: true });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Something went wrong. Please try again later." });
+    // TEMP DEBUG: surface the real DB error to the client. Revert after diagnosing.
+    return res.status(500).json({ error: "DEBUG: " + (err && err.message ? err.message : String(err)) });
   }
 };
