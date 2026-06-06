@@ -29,9 +29,6 @@ All three share one **Postgres database** (`subscribers` + `consent_log` tables)
 
 These are your `DATABASE_URL` values. Keep them secret — never commit them.
 
-> Note: a Neon project `news-bot` was also created earlier as a fallback. You're
-> using Supabase, so you can ignore or delete it — it won't be referenced.
-
 **Seed yourself as the first subscriber** (Supabase SQL Editor — use your real number):
 ```sql
 INSERT INTO subscribers (phone, topics, status, consent_at, consent_text)

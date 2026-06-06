@@ -42,8 +42,7 @@ the browser. Leave RLS off, or enable it with no public policies so only the
 service role has access. Do **not** expose these tables through Supabase's public
 REST/anon API.
 
-## Switching back to Neon (if ever needed)
-A Neon project `news-bot` was provisioned earlier as a fallback. To use it
-instead, swap the `postgres` dependency for `@neondatabase/serverless` and change
-the two connection lines to `const sql = neon(process.env.DATABASE_URL)`. The
-tagged-template query syntax is the same either way.
+## Using a different Postgres host
+The `postgres` library works with any standard Postgres connection string, so you
+can point `DATABASE_URL` at any provider (Neon, RDS, a local DB) without code
+changes. Only the connection string changes.
