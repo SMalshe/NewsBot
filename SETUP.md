@@ -45,13 +45,17 @@ It runs `python main.py` daily at **12:00 UTC** (≈ 7am US Central — edit the
 
 **Add repo secrets** in GitHub → repo **Settings → Secrets and variables → Actions → New repository secret**:
 
-- `ANTHROPIC_API_KEY`
+- `OPENAI_API_KEY`
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `TWILIO_FROM_NUMBER`  (your toll-free number, E.164, e.g. `+18XXXXXXXXX`)
 - `DATABASE_URL`
 
-(Optional **Variable**, not secret: `ANTHROPIC_MODEL`, defaults to `claude-haiku-4-5-20251001`.)
+Optional **Variables** (not secret): `OPENAI_MODEL` (defaults to `gpt-4o-mini`),
+`LLM_PROVIDER` (defaults to `openai`).
+
+> **Switching to Claude later:** set Variable `LLM_PROVIDER=anthropic` and add the
+> secret `ANTHROPIC_API_KEY`. No code change needed.
 
 **Test it now:** GitHub → **Actions** tab → *Morning Briefing* → **Run workflow**.
 Watch the logs; you should get a text (once your number is verified — see §5).
@@ -64,9 +68,10 @@ Code: [`twilio-function/functions/sms.js`](twilio-function/functions/sms.js).
 
 **Option A — Twilio Console (no CLI):**
 1. Console → **Functions & Assets → Services → Create Service** (name it `newsbot`).
-2. **Dependencies** tab → add `@anthropic-ai/sdk` and `postgres`.
-3. **Environment Variables** tab → add `ANTHROPIC_API_KEY` and `DATABASE_URL`
-   (and optionally `ANTHROPIC_MODEL`).
+2. **Dependencies** tab → add `openai` and `postgres`.
+3. **Environment Variables** tab → add `OPENAI_API_KEY` and `DATABASE_URL`
+   (optionally `OPENAI_MODEL`; to use Claude instead, set `LLM_PROVIDER=anthropic`
+   and add `ANTHROPIC_API_KEY`).
 4. Add a **Function**, path `/sms`, set it to **Protected** or **Public**
    (Public is fine to start), paste in `sms.js`, and **Deploy**.
 5. Copy the function URL (e.g. `https://newsbot-1234.twil.io/sms`).
@@ -137,7 +142,7 @@ error on send. That's expected.
 ## Local test of the morning job
 ```bash
 pip install -r requirements.txt
-export DATABASE_URL=... ANTHROPIC_API_KEY=... TWILIO_ACCOUNT_SID=... \
+export DATABASE_URL=... OPENAI_API_KEY=... TWILIO_ACCOUNT_SID=... \
        TWILIO_AUTH_TOKEN=... TWILIO_FROM_NUMBER=...
 python main.py
 ```

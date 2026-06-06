@@ -4,6 +4,7 @@
   "private": true,
   "description": "Inbound-SMS reply handler for the News Bot, deployed as a Twilio Function.",
   "dependencies": {
+    "openai": "^4.77.0",
     "@anthropic-ai/sdk": "^0.32.1",
     "postgres": "^3.4.5"
   },

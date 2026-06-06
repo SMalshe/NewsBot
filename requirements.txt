@@ -1,4 +1,5 @@
 feedparser
+openai
 anthropic
 twilio
 psycopg2-binary

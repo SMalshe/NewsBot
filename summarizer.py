@@ -1,8 +1,7 @@
 # summarize.py
-import os, anthropic, json, re
+import os, json, re
 from twilio.rest import Client
-
-MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
+from llm import complete
 
 SYSTEM = """You are a sharp, slightly sensationalist news reporter. For each story, write a punchy 2-3 sentence SMS summary — dramatic, factual, opinionated. End each with a one-line question that makes the reader want to reply.
 
@@ -17,18 +16,12 @@ Return ONLY a valid JSON array, no other text:
 ]"""
 
 def summarize(news):
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     text = ""
     for topic, items in news.items():
         for it in items:
             text += f"Topic: {topic}\nTitle: {it['title']}\nSummary: {it['summary']}\nSource: {it.get('source', '')}\nLink: {it['link']}\n\n"
 
-    raw = client.messages.create(
-        model=MODEL,
-        max_tokens=3000,
-        system=SYSTEM,
-        messages=[{"role": "user", "content": f"Summarize these stories:\n\n{text}"}]
-    ).content[0].text
+    raw = complete(SYSTEM, f"Summarize these stories:\n\n{text}", max_tokens=3000)
 
     raw = re.sub(r"```(?:json)?|```", "", raw).strip()
     stories = json.loads(raw)

@@ -18,11 +18,40 @@
 //    to stay well under Twilio's 10-second function timeout.
 //  - `prepare: false` is required for Supabase's transaction pooler (PgBouncer).
 
-const Anthropic = require("@anthropic-ai/sdk");
 const postgres = require("postgres");
 
 const STOP_WORDS = ["stop", "stopall", "unsubscribe", "cancel", "end", "quit"];
 const START_WORDS = ["start", "unstop", "yes"];
+
+// Provider-agnostic completion. Active provider chosen by context.LLM_PROVIDER
+// (default "openai"). Set LLM_PROVIDER=anthropic to switch back to Claude.
+async function llmComplete(context, system, userText, maxTokens) {
+  const provider = (context.LLM_PROVIDER || "openai").toLowerCase();
+  if (provider === "anthropic") {
+    const Anthropic = require("@anthropic-ai/sdk");
+    const client = new Anthropic({ apiKey: context.ANTHROPIC_API_KEY });
+    const model = context.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
+    const r = await client.messages.create({
+      model,
+      max_tokens: maxTokens,
+      system,
+      messages: [{ role: "user", content: userText }],
+    });
+    return r.content[0].text || "";
+  }
+  const OpenAI = require("openai");
+  const client = new OpenAI({ apiKey: context.OPENAI_API_KEY });
+  const model = context.OPENAI_MODEL || "gpt-4o-mini";
+  const r = await client.chat.completions.create({
+    model,
+    max_tokens: maxTokens,
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: userText },
+    ],
+  });
+  return r.choices[0].message.content || "";
+}
 
 exports.handler = async function (context, event, callback) {
   const twiml = new Twilio.twiml.MessagingResponse();
@@ -31,8 +60,6 @@ exports.handler = async function (context, event, callback) {
   const lower = body.toLowerCase();
 
   const sql = postgres(context.DATABASE_URL, { ssl: "require", prepare: false });
-  const model = context.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
-  const anthropic = new Anthropic({ apiKey: context.ANTHROPIC_API_KEY });
 
   let reply;
   try {
@@ -55,25 +82,21 @@ exports.handler = async function (context, event, callback) {
       } else {
         const sub = rows[0];
 
-        // --- One Claude call: decide intent AND produce the reply --------
-        const out = await anthropic.messages.create({
-          model,
-          max_tokens: 350,
-          system:
-            "You are the SMS assistant for a personal news service called Daily Brief. " +
-            `The subscriber's current topics are: ${JSON.stringify(sub.topics)}. ` +
-            "Decide whether their message asks to CHANGE their news topics, or is a general message/question. " +
-            "Reply with ONLY minified JSON, no other text, shaped exactly like: " +
-            '{"action":"update_topics"|"reply","topics":["lowercase","keywords"],"reply":"short casual SMS reply, 1-3 sentences, no formatting"}. ' +
-            'Use "update_topics" only if they want to add/remove/replace topics; then "topics" MUST be the FULL updated list and "reply" confirms it. ' +
-            'Otherwise use "reply" to answer helpfully and leave "topics" as the unchanged list.',
-          messages: [{ role: "user", content: body }],
-        });
+        // --- One LLM call: decide intent AND produce the reply ----------
+        const system =
+          "You are the SMS assistant for a personal news service called Daily Brief. " +
+          `The subscriber's current topics are: ${JSON.stringify(sub.topics)}. ` +
+          "Decide whether their message asks to CHANGE their news topics, or is a general message/question. " +
+          "Reply with ONLY minified JSON, no other text, shaped exactly like: " +
+          '{"action":"update_topics"|"reply","topics":["lowercase","keywords"],"reply":"short casual SMS reply, 1-3 sentences, no formatting"}. ' +
+          'Use "update_topics" only if they want to add/remove/replace topics; then "topics" MUST be the FULL updated list and "reply" confirms it. ' +
+          'Otherwise use "reply" to answer helpfully and leave "topics" as the unchanged list.';
+        const outText = await llmComplete(context, system, body, 350);
 
         let action = "reply";
         let topics = sub.topics;
         reply = "";
-        const match = (out.content[0].text || "").match(/\{[\s\S]*\}/);
+        const match = (outText || "").match(/\{[\s\S]*\}/);
         if (match) {
           try {
             const parsed = JSON.parse(match[0]);
